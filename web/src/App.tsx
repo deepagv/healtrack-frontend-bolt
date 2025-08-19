@@ -1,34 +1,27 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route } from 'react-router-dom'
+import DevNav from './components/DevNav'
+import DesignRoot from './screens/DesignRoot'
+import Dashboard from './screens/Dashboard'
+import Tracking from './screens/Tracking'
+import Log from './screens/Log'
+import Appointments from './screens/Appointments'
+import Profile from './screens/Profile'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="min-h-screen bg-gray-50">
+      <DevNav />
+      <main>
+        <Routes>
+          <Route path="/" element={<DesignRoot />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/tracking" element={<Tracking />} />
+          <Route path="/log" element={<Log />} />
+          <Route path="/appointments" element={<Appointments />} />
+          <Route path="/profile" element={<Profile />} />
+        </Routes>
+      </main>
+    </div>
   )
 }
 

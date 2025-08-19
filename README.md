@@ -4,10 +4,31 @@ This repo contains the Figma-exported frontend code and assets.
 
 ## Structure
 - `src/` – code (components, styles, utils, supabase client, App.tsx)
+- `web/` – new Vite React app that imports and uses the design export
 - `public/assets/` – images, icons, fonts (add later as needed)
 - `docs/` – design docs (ATTRIBUTIONS.md, guidelines)
 
 > Note: This is a design export. It may need a build tool (like React/Vite) to run as a site.
+
+## How to Run
+
+### 1. Start the API Server
+```bash
+cd server
+npm ci
+npm run dev
+# → API server runs on http://localhost:3001
+```
+
+### 2. Start the Web App
+```bash
+cd web
+npm ci
+npm run dev
+# → Web app runs on http://localhost:5173
+```
+
+The web app imports components from the design export via the `@design` alias and provides routing between different screens.
 
 ---
 
