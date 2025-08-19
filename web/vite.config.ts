@@ -2,15 +2,13 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-// https://vitejs.dev/config/
+// Vite config for the web app
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
+      // Use components from the existing design export at ../src
       '@design': path.resolve(__dirname, '../src'),
     },
-  },
-  server: {
-    port: 5173,
   },
 })
