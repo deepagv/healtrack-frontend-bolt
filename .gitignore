@@ -1,0 +1,25 @@
+# OS/Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node / build outputs (safe even if you don't use Node yet)
+node_modules/
+dist/
+build/
+.cache/
+*.log
+
+# Environment files (if you add them later)
+.env
+.env.*
+
+# Build & caches
+.next/
+out/
+coverage/
+.eslintcache
+.parcel-cache/
+.turbo/
+vite.svg
