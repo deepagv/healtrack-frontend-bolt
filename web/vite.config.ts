@@ -51,7 +51,10 @@ export default defineConfig({
       'input-otp',
       'react-resizable-panels',
       'sonner',
-      'next-themes'
+      'next-themes',
+      'clsx',
+      'tailwind-merge',
+      '@radix-ui/react-checkbox'
     ]
   }
 })
