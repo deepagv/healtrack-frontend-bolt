@@ -120,6 +120,10 @@ const Trackers = () => {
     }
   }
 
+  const formatValue = (kind: HealthMetric['kind'], value: number) => {
+    return value.toString()
+  }
+
   const chartData = metrics.map(m => ({
     date: new Date(m.recorded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     value: m.value
@@ -280,6 +284,7 @@ const Trackers = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   )
 }
