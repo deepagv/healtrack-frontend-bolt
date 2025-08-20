@@ -3,6 +3,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import healthRouter from './routes/health';
 import accountRouter from './routes/account';
+import accountRouter from './routes/account';
 
 const app = express();
 
@@ -16,6 +17,7 @@ const allowlist = (process.env.CORS_ORIGIN ?? '')
   .split(',')
   .map(s => s.trim())
   .filter(Boolean)
+  .concat(['http://localhost:5173']); // Always allow Vite dev server
   .concat(['http://localhost:5173']); // Always allow Vite dev server
 
 if (allowlist.length > 0) {
@@ -46,6 +48,9 @@ app.get('/api/ping', (_req: Request, res: Response) => {
 
 // Health sub-router
 app.use('/api/health', healthRouter);
+
+// Account management sub-router
+app.use('/api/account', accountRouter);
 
 // Account management sub-router
 app.use('/api/account', accountRouter);
