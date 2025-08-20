@@ -1,5 +1,5 @@
 /* Import the design system styles */
-@import url('../src/styles/globals.css');
+@import url('../../src/styles/globals.css');
 
 /* Additional styles for the web app wrapper */
 body {
