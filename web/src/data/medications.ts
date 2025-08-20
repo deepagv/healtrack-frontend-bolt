@@ -90,3 +90,24 @@ export async function getMedicationLogs(medicationId: string): Promise<Medicatio
   
   return data || []
 }
+
+export async function getMedicationLogsForToday(medicationId: string): Promise<MedicationLog[]> {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  
+  const { data, error } = await supabase
+    .from('medication_logs')
+    .select('*')
+    .eq('medication_id', medicationId)
+    .gte('taken_at', today.toISOString())
+    .lt('taken_at', tomorrow.toISOString())
+    .order('taken_at', { ascending: false })
+  
+  if (error) {
+    throw new Error(`Failed to fetch today's medication logs: ${error.message}`)
+  }
+  
+  return data || []
+}
