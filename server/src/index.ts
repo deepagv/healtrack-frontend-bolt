@@ -18,7 +18,6 @@ const allowlist = (process.env.CORS_ORIGIN ?? '')
   .map(s => s.trim())
   .filter(Boolean)
   .concat(['http://localhost:5173']); // Always allow Vite dev server
-  .concat(['http://localhost:5173']); // Always allow Vite dev server
 
 if (allowlist.length > 0) {
   app.use(
