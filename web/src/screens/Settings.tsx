@@ -59,10 +59,13 @@ const Settings = () => {
       
       const { data: { session } } = await supabase.auth.getSession()
       
+      const { data: { session } } = await supabase.auth.getSession()
+      
       const response = await fetch('http://localhost:3001/api/account/delete', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
           'Authorization': `Bearer ${session?.access_token}`
         }
       })
