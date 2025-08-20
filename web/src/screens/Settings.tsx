@@ -57,10 +57,9 @@ const Settings = () => {
     try {
       setDeleting(true)
       
-      // Call server endpoint to delete account
       const { data: { session } } = await supabase.auth.getSession()
       
-      const response = await fetch('/api/account/delete', {
+      const response = await fetch('http://localhost:3001/api/account/delete', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +68,8 @@ const Settings = () => {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to delete account')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to delete account')
       }
 
       showToast('success', 'Account deleted successfully')
@@ -78,7 +78,7 @@ const Settings = () => {
       await supabase.auth.signOut()
     } catch (error) {
       console.error('Error deleting account:', error)
-      showToast('error', 'Failed to delete account')
+      showToast('error', error instanceof Error ? error.message : 'Failed to delete account')
     } finally {
       setDeleting(false)
       setShowDeleteConfirm(false)

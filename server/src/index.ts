@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import healthRouter from './routes/health';
+import accountRouter from './routes/account';
 
 const app = express();
 
@@ -45,6 +46,9 @@ app.get('/api/ping', (_req: Request, res: Response) => {
 
 // Health sub-router
 app.use('/api/health', healthRouter);
+
+// Account management sub-router
+app.use('/api/account', accountRouter);
 
 /* ---------- 404 + Error handling ---------- */
 app.use((req: Request, res: Response) => {
