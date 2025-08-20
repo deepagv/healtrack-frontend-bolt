@@ -232,11 +232,9 @@ const Medications = () => {
               const nextDue = getNextDueTime(medication.schedule)
               
               return (
-                <div key={medication.id} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div key={medication.id} className="bg-card rounded-card border border-border p-4 shadow-card">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
                       <div className="w-10 h-10 bg-primary-600/10 rounded-lg flex items-center justify-center">
                         <Pill className="w-5 h-5 text-primary-600" />
                       </div>
@@ -444,7 +442,6 @@ const Medications = () => {
           </div>
         )}
       </div>
-    </div>
       </div>
     </div>
   )
