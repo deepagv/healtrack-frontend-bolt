@@ -23,6 +23,11 @@ npm run dev
 ### 2. Start the Web App
 ```bash
 cd web
+
+# copy environment variables
+cp .env.example .env
+# Edit .env with your Supabase credentials if different
+
 npm ci
 npm run dev
 # → Web app runs on http://localhost:5173
