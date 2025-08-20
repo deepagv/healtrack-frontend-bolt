@@ -6,10 +6,13 @@ const DevNav = () => {
   const navItems = [
     { path: '/', label: 'Design Root' },
     { path: '/dashboard', label: 'Dashboard' },
-    { path: '/tracking', label: 'Tracking' },
-    { path: '/log', label: 'Log' },
+    { path: '/trackers', label: 'Trackers' },
+    { path: '/medications', label: 'Medications' },
     { path: '/appointments', label: 'Appointments' },
+    { path: '/goals', label: 'Goals' },
     { path: '/profile', label: 'Profile' },
+    { path: '/settings', label: 'Settings' },
+    { path: '/notifications', label: 'Notifications' },
   ]
 
   return (

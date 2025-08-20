@@ -1,6 +1,6 @@
-import { HomeScreen } from '@design/components/HomeScreen';
+import { ProfileScreen } from '@design/components/ProfileScreen';
 
-const Dashboard = () => {
+const Settings = () => {
   // Mock user for the exported component
   const mockUser = {
     id: 'demo-user',
@@ -8,7 +8,7 @@ const Dashboard = () => {
     user_metadata: {
       name: 'Demo User'
     }
-  }
+  };
 
   return (
     <div style={{ 
@@ -18,12 +18,12 @@ const Dashboard = () => {
       background: '#fff',
       boxShadow: '0 0 20px rgba(0,0,0,0.1)'
     }}>
-      <HomeScreen 
-        user={mockUser} 
-        onNavigateToUpload={() => console.log('Navigate to upload')}
+      <ProfileScreen 
+        user={mockUser}
+        onSignOut={() => console.log('Sign out')}
       />
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Settings;
