@@ -5,6 +5,16 @@ import { listAppointments, createAppointment, updateAppointment, deleteAppointme
 import { createNotification } from '../data/notifications'
 import { useToast } from '../components/Toast'
 
+import { z } from 'zod'
+
+const appointmentSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  location: z.string().optional(),
+  startsAt: z.string().min(1, 'Start date and time is required'),
+  endsAt: z.string().optional(),
+  notes: z.string().optional()
+})
+
 const Appointments = () => {
   const { user } = useSupabase()
   const { showToast } = useToast()
@@ -12,6 +22,7 @@ const Appointments = () => {
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null)
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [formData, setFormData] = useState({
     title: '',
     location: '',
@@ -70,10 +81,19 @@ const Appointments = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.title.trim() || !formData.startsAt) {
-      showToast('error', 'Please fill in required fields')
+    // Validate form with zod
+    const validation = appointmentSchema.safeParse(formData)
+
+    if (!validation.success) {
+      const errors: Record<string, string> = {}
+      validation.error.errors.forEach(error => {
+        errors[error.path[0] as string] = error.message
+      })
+      setFormErrors(errors)
       return
     }
+
+    setFormErrors({})
 
     try {
       const startsAt = new Date(formData.startsAt)
@@ -199,26 +219,25 @@ const Appointments = () => {
   }
 
   return (
-    <div style={{ 
-      maxWidth: '428px', 
-      margin: '0 auto',
-      minHeight: 'calc(100vh - 80px)',
-      background: '#fff',
-      boxShadow: '0 0 20px rgba(0,0,0,0.1)'
-    }}>
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col h-full bg-background">
+      {/* Header */}
+      <div className="bg-card p-4 border-b border-border">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Appointments</h1>
-            <p className="text-gray-600">Manage your healthcare schedule</p>
+            <h1 className="text-h2 font-semibold text-foreground">Appointments</h1>
+            <p className="text-caption text-muted-foreground">Manage your healthcare schedule</p>
           </div>
           <button
             onClick={openCreateModal}
-            className="bg-teal-600 text-white p-2 rounded-lg hover:bg-teal-700 transition-colors"
+            className="w-12 h-12 bg-primary-600 hover:bg-primary-700 text-white rounded-full flex items-center justify-center transition-colors"
           >
             <Plus className="w-5 h-5" />
           </button>
         </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+      <div className="p-4">
 
         {Object.keys(groupedAppointments).length === 0 ? (
           <div className="text-center py-12">
@@ -318,17 +337,21 @@ const Appointments = () => {
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="appt-title" className="block text-body font-medium text-foreground mb-2">
                     Title *
                   </label>
                   <input
+                    id="appt-title"
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     placeholder="e.g., Dr. Smith - Checkup"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full h-12 px-3 border border-border rounded-button bg-input-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                     required
                   />
+                  {formErrors.title && (
+                    <p className="text-caption text-danger mt-1">{formErrors.title}</p>
+                  )}
                 </div>
 
                 <div>
@@ -401,6 +424,8 @@ const Appointments = () => {
             </div>
           </div>
         )}
+      </div>
+    </div>
       </div>
     </div>
   )

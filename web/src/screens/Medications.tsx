@@ -5,12 +5,23 @@ import { listMeds, addMed, logMed, type Medication } from '../data/medications'
 import { createNotification } from '../data/notifications'
 import { useToast } from '../components/Toast'
 
+import { z } from 'zod'
+
+const medicationSchema = z.object({
+  name: z.string().min(1, 'Medication name is required'),
+  dosage: z.string().optional(),
+  instructions: z.string().optional(),
+  scheduleType: z.enum(['daily', 'weekly', 'as_needed']),
+  times: z.array(z.string()).min(1, 'At least one time is required for scheduled medications')
+})
+
 const Medications = () => {
   const { user } = useSupabase()
   const { showToast } = useToast()
   const [medications, setMedications] = useState<Medication[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [createForm, setCreateForm] = useState({
     name: '',
     dosage: '',
@@ -62,10 +73,22 @@ const Medications = () => {
   const handleCreateMedication = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!createForm.name.trim()) {
-      showToast('error', 'Please enter medication name')
+    // Validate form with zod
+    const validation = medicationSchema.safeParse({
+      ...createForm,
+      times: createForm.scheduleType === 'as_needed' ? ['00:00'] : createForm.times.filter(time => time.trim())
+    })
+
+    if (!validation.success) {
+      const errors: Record<string, string> = {}
+      validation.error.errors.forEach(error => {
+        errors[error.path[0] as string] = error.message
+      })
+      setFormErrors(errors)
       return
     }
+
+    setFormErrors({})
 
     try {
       const schedule = createForm.scheduleType === 'as_needed' 
@@ -166,41 +189,42 @@ const Medications = () => {
   }
 
   return (
-    <div style={{ 
-      maxWidth: '428px', 
-      margin: '0 auto',
-      minHeight: 'calc(100vh - 80px)',
-      background: '#fff',
-      boxShadow: '0 0 20px rgba(0,0,0,0.1)'
-    }}>
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col h-full bg-background">
+      {/* Header */}
+      <div className="bg-card p-4 border-b border-border">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Medications</h1>
-            <p className="text-gray-600">Manage your prescriptions</p>
+            <h1 className="text-h2 font-semibold text-foreground">Medications</h1>
+            <p className="text-caption text-muted-foreground">Manage your prescriptions</p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="bg-teal-600 text-white p-2 rounded-lg hover:bg-teal-700 transition-colors"
+            className="w-12 h-12 bg-primary-600 hover:bg-primary-700 text-white rounded-full flex items-center justify-center transition-colors"
           >
             <Plus className="w-5 h-5" />
           </button>
         </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+      <div className="p-4">
 
         {medications.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Pill className="w-8 h-8 text-gray-400" />
+          <div className="flex-1 flex items-center justify-center text-center py-12">
+            <div>
+              <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Pill className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h2 className="text-h3 font-semibold text-foreground mb-2">No medications added yet</h2>
+              <p className="text-body text-muted-foreground mb-4">Add your medications to track dosages and get reminders</p>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-primary-600 text-white px-6 py-3 rounded-button hover:bg-primary-700 transition-colors flex items-center gap-2 mx-auto"
+              >
+                <Plus className="w-5 h-5" />
+                Add Medication
+              </button>
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">No medications added yet</h2>
-            <p className="text-gray-600 mb-4">Add your medications to track dosages and get reminders</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2 mx-auto"
-            >
-              <Plus className="w-5 h-5" />
-              Add Medication
-            </button>
           </div>
         ) : (
           <div className="space-y-4">
@@ -209,22 +233,24 @@ const Medications = () => {
               
               return (
                 <div key={medication.id} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div key={medication.id} className="bg-card rounded-card border border-border p-4 shadow-card">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-                        <Pill className="w-5 h-5 text-teal-600" />
+                      <div className="w-10 h-10 bg-primary-600/10 rounded-lg flex items-center justify-center">
+                        <Pill className="w-5 h-5 text-primary-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">{medication.name}</h3>
+                        <h3 className="text-body font-semibold text-foreground">{medication.name}</h3>
                         {medication.dosage && (
-                          <p className="text-sm text-gray-600">{medication.dosage}</p>
+                          <p className="text-caption text-muted-foreground">{medication.dosage}</p>
                         )}
                       </div>
                     </div>
                     
                     {nextDue && (
                       <div className="flex items-center gap-2">
-                        <div className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
+                        <div className="bg-warning/10 text-warning px-2 py-1 rounded-md text-caption font-medium flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           Due {nextDue}
                         </div>
@@ -233,7 +259,7 @@ const Medications = () => {
                   </div>
                   
                   {medication.instructions && (
-                    <p className="text-sm text-gray-600 mb-3">{medication.instructions}</p>
+                    <p className="text-body text-muted-foreground mb-3">{medication.instructions}</p>
                   )}
                   
                   {medication.schedule && (
@@ -262,12 +288,12 @@ const Medications = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleMarkTaken(medication)}
-                      className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 bg-success text-white py-2 px-4 rounded-button hover:bg-success/90 transition-colors flex items-center justify-center gap-2"
                     >
                       <Check className="w-4 h-4" />
                       Mark Taken
                     </button>
-                    <button className="px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
+                    <button className="px-3 py-2 border border-border text-foreground rounded-button hover:bg-surface-subtle transition-colors">
                       Edit
                     </button>
                   </div>
@@ -279,13 +305,13 @@ const Medications = () => {
 
         {/* Create Medication Modal */}
         {showCreateModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-card rounded-card p-6 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-card border border-border">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">Add Medication</h2>
+                <h2 className="text-h2 font-semibold text-foreground">Add Medication</h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -293,57 +319,64 @@ const Medications = () => {
               
               <form onSubmit={handleCreateMedication} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="med-name" className="block text-body font-medium text-foreground mb-2">
                     Medication Name *
                   </label>
                   <input
+                    id="med-name"
                     type="text"
                     value={createForm.name}
                     onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
                     placeholder="e.g., Metformin"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full h-12 px-3 border border-border rounded-button bg-input-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                     required
                   />
+                  {formErrors.name && (
+                    <p className="text-caption text-danger mt-1">{formErrors.name}</p>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="med-dosage" className="block text-body font-medium text-foreground mb-2">
                     Dosage
                   </label>
                   <input
+                    id="med-dosage"
                     type="text"
                     value={createForm.dosage}
                     onChange={(e) => setCreateForm({ ...createForm, dosage: e.target.value })}
                     placeholder="e.g., 500mg"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full h-12 px-3 border border-border rounded-button bg-input-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="med-instructions" className="block text-body font-medium text-foreground mb-2">
                     Instructions
                   </label>
                   <textarea
+                    id="med-instructions"
                     value={createForm.instructions}
                     onChange={(e) => setCreateForm({ ...createForm, instructions: e.target.value })}
                     placeholder="e.g., Take with food"
                     rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                    className="w-full px-3 py-2 border border-border rounded-button bg-input-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent resize-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="med-schedule" className="block text-body font-medium text-foreground mb-2">
                     Schedule Type
                   </label>
                   <select
+                    id="med-schedule"
                     value={createForm.scheduleType}
                     onChange={(e) => setCreateForm({ 
                       ...createForm, 
                       scheduleType: e.target.value as 'daily' | 'weekly' | 'as_needed',
                       times: e.target.value === 'as_needed' ? [] : ['08:00']
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full h-12 px-3 border border-border rounded-button bg-input-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                   >
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
@@ -353,9 +386,12 @@ const Medications = () => {
 
                 {createForm.scheduleType !== 'as_needed' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-body font-medium text-foreground mb-2">
                       Times
                     </label>
+                    {formErrors.times && (
+                      <p className="text-caption text-danger mb-2">{formErrors.times}</p>
+                    )}
                     <div className="space-y-2">
                       {createForm.times.map((time, index) => (
                         <div key={index} className="flex gap-2">
@@ -363,13 +399,13 @@ const Medications = () => {
                             type="time"
                             value={time}
                             onChange={(e) => updateTimeSlot(index, e.target.value)}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                            className="flex-1 h-12 px-3 border border-border rounded-button bg-input-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                           />
                           {createForm.times.length > 1 && (
                             <button
                               type="button"
                               onClick={() => removeTimeSlot(index)}
-                              className="px-2 py-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                              className="px-2 py-2 text-danger hover:bg-danger/10 rounded-button transition-colors"
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -379,7 +415,7 @@ const Medications = () => {
                       <button
                         type="button"
                         onClick={addTimeSlot}
-                        className="w-full py-2 border border-dashed border-gray-300 text-gray-600 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                        className="w-full h-12 border border-dashed border-border text-muted-foreground rounded-button hover:bg-surface-subtle transition-colors flex items-center justify-center gap-2"
                       >
                         <Plus className="w-4 h-4" />
                         Add Time
@@ -392,13 +428,13 @@ const Medications = () => {
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                    className="flex-1 h-12 px-4 border border-border text-foreground rounded-button hover:bg-surface-subtle transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors"
+                    className="flex-1 h-12 bg-primary-600 text-white px-4 rounded-button hover:bg-primary-700 transition-colors"
                   >
                     Add Medication
                   </button>
@@ -407,6 +443,8 @@ const Medications = () => {
             </div>
           </div>
         )}
+      </div>
+    </div>
       </div>
     </div>
   )

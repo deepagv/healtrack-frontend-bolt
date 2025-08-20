@@ -136,13 +136,13 @@ const Dashboard = () => {
   }
 
   return (
-    <div style={{ 
-      maxWidth: '428px', 
-      margin: '0 auto',
-      minHeight: 'calc(100vh - 80px)',
-      background: '#fff',
-      boxShadow: '0 0 20px rgba(0,0,0,0.1)'
-    }}>
+    <div className="flex flex-col h-full bg-background">
+      {/* Header */}
+      <div className="bg-card p-4 border-b border-border">
+        <h1 className="text-h2 font-semibold text-foreground">Dashboard</h1>
+        <p className="text-caption text-muted-foreground">Your health overview</p>
+      </div>
+
       <div className="p-4">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">

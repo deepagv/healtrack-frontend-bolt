@@ -3,7 +3,11 @@ import { Settings as SettingsIcon, Ruler, Scale, Trash2, AlertTriangle } from 'l
 import { useSupabase } from '../hooks/useSupabase'
 import { useToast } from '../components/Toast'
 
-const Settings = () => {
+interface SettingsProps {
+  onBack: () => void
+}
+
+const Settings = ({ onBack }: SettingsProps) => {
   const { supabase, user } = useSupabase()
   const { showToast } = useToast()
   const [units, setUnits] = useState({
@@ -89,32 +93,36 @@ const Settings = () => {
     }
   }
 
+import { ArrowLeft } from 'lucide-react'
+
   return (
-    <div style={{ 
-      maxWidth: '428px', 
-      margin: '0 auto',
-      minHeight: 'calc(100vh - 80px)',
-      background: '#fff',
-      boxShadow: '0 0 20px rgba(0,0,0,0.1)'
-    }}>
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col h-full bg-background">
+      {/* Header */}
+      <div className="bg-card p-4 border-b border-border">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="w-12 h-12 bg-surface-subtle hover:bg-muted/80 rounded-full flex items-center justify-center transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+          </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Settings</h1>
-            <p className="text-gray-600">Customize your app preferences</p>
-          </div>
-          <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
-            <SettingsIcon className="w-6 h-6 text-teal-600" />
+            <h1 className="text-h2 font-semibold text-foreground">Settings</h1>
+            <p className="text-caption text-muted-foreground">Customize your app preferences</p>
           </div>
         </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+      <div className="p-4">
 
         {/* Units Preferences */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Units & Measurements</h2>
+        <div className="bg-card rounded-card border border-border p-4 mb-6 shadow-card">
+          <h2 className="text-h3 font-semibold text-foreground mb-4">Units & Measurements</h2>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-body font-medium text-foreground mb-3">
                 Measurement System
               </label>
               <div className="grid grid-cols-2 gap-3">
@@ -123,15 +131,15 @@ const Settings = () => {
                   className={`
                     flex items-center justify-center gap-2 p-3 rounded-lg border transition-colors
                     ${units.system === 'metric'
-                      ? 'bg-teal-50 border-teal-200 text-teal-700'
-                      : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                      ? 'bg-primary-600/10 border-primary-600/20 text-primary-600'
+                      : 'bg-card border-border text-foreground hover:bg-surface-subtle'
                     }
                   `}
                 >
                   <Ruler className="w-4 h-4" />
                   <div className="text-center">
-                    <div className="font-medium">Metric</div>
-                    <div className="text-xs text-gray-500">cm, kg, °C</div>
+                    <div className="text-body font-medium">Metric</div>
+                    <div className="text-caption text-muted-foreground">cm, kg, °C</div>
                   </div>
                 </button>
                 
@@ -190,21 +198,46 @@ const Settings = () => {
             </div>
           </div>
         </div>
+        {/* About / Version */}
+        <div className="bg-card rounded-card border border-border p-4 shadow-card">
+          <h2 className="text-h3 font-semibold text-foreground mb-4">About</h2>
+          
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-body text-muted-foreground">Version</span>
+              <span className="text-body font-medium text-foreground">1.0.0</span>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-body text-muted-foreground">Build</span>
+              <span className="text-caption font-mono text-muted-foreground">
+                {process.env.VITE_COMMIT_HASH || 'dev-build'}
+              </span>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-body text-muted-foreground">Supabase Project</span>
+              <span className="text-caption font-mono text-muted-foreground">
+                {import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0] || 'local'}
+              </span>
+            </div>
+          </div>
+        </div>
 
         {/* Danger Zone */}
-        <div className="bg-white rounded-lg border border-red-200 p-4">
+        <div className="bg-card rounded-card border border-danger/20 p-4 shadow-card">
           <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
-            <h2 className="text-lg font-semibold text-red-900">Danger Zone</h2>
+            <AlertTriangle className="w-5 h-5 text-danger" />
+            <h2 className="text-h3 font-semibold text-danger">Danger Zone</h2>
           </div>
           
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-body text-muted-foreground mb-4">
             Permanently delete your account and all associated data. This action cannot be undone.
           </p>
           
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="w-full bg-red-600 text-white py-3 px-4 rounded-md hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-danger text-white py-3 px-4 rounded-button hover:bg-danger/90 transition-colors flex items-center justify-center gap-2"
           >
             <Trash2 className="w-5 h-5" />
             Delete Account
@@ -213,24 +246,24 @@ const Settings = () => {
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-card rounded-card p-6 w-full max-w-md shadow-card border border-border">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                <div className="w-12 h-12 bg-danger/10 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-danger" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">Delete Account</h2>
-                  <p className="text-sm text-gray-600">This action cannot be undone</p>
+                  <h2 className="text-h2 font-semibold text-foreground">Delete Account</h2>
+                  <p className="text-caption text-muted-foreground">This action cannot be undone</p>
                 </div>
               </div>
               
               <div className="space-y-4">
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm text-red-800">
+                <div className="bg-danger/5 border border-danger/20 rounded-card p-3">
+                  <p className="text-body text-danger">
                     <strong>Warning:</strong> This will permanently delete:
                   </p>
-                  <ul className="text-sm text-red-700 mt-2 space-y-1">
+                  <ul className="text-caption text-danger mt-2 space-y-1">
                     <li>• Your profile and personal information</li>
                     <li>• All health metrics and tracking data</li>
                     <li>• Medications and appointment records</li>
@@ -239,15 +272,16 @@ const Settings = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="delete-confirm" className="block text-body font-medium text-foreground mb-2">
                     Type <strong>DELETE</strong> to confirm:
                   </label>
                   <input
+                    id="delete-confirm"
                     type="text"
                     value={deleteConfirmText}
                     onChange={(e) => setDeleteConfirmText(e.target.value)}
                     placeholder="DELETE"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    className="w-full h-12 px-3 border border-border rounded-button bg-input-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-danger focus:border-transparent"
                   />
                 </div>
 
@@ -258,14 +292,14 @@ const Settings = () => {
                       setShowDeleteConfirm(false)
                       setDeleteConfirmText('')
                     }}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                    className="flex-1 h-12 px-4 border border-border text-foreground rounded-button hover:bg-surface-subtle transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleDeleteAccount}
                     disabled={deleting || deleteConfirmText !== 'DELETE'}
-                    className="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 h-12 bg-danger text-white px-4 rounded-button hover:bg-danger/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {deleting ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -279,6 +313,8 @@ const Settings = () => {
             </div>
           </div>
         )}
+      </div>
+    </div>
       </div>
     </div>
   )

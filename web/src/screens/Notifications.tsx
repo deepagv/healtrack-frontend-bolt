@@ -4,7 +4,11 @@ import { useSupabase } from '../hooks/useSupabase'
 import { listNotifications, markRead, type Notification } from '../data/notifications'
 import { useToast } from '../components/Toast'
 
-const Notifications = () => {
+interface NotificationsProps {
+  onBack: () => void
+}
+
+const Notifications = ({ onBack }: NotificationsProps) => {
   const { user } = useSupabase()
   const { showToast } = useToast()
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -124,28 +128,36 @@ const Notifications = () => {
     )
   }
 
+import { ArrowLeft } from 'lucide-react'
+
   return (
-    <div style={{ 
-      maxWidth: '428px', 
-      margin: '0 auto',
-      minHeight: 'calc(100vh - 80px)',
-      background: '#fff',
-      boxShadow: '0 0 20px rgba(0,0,0,0.1)'
-    }}>
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col h-full bg-background">
+      {/* Header */}
+      <div className="bg-card p-4 border-b border-border">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="w-12 h-12 bg-surface-subtle hover:bg-muted/80 rounded-full flex items-center justify-center transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+          </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Notifications</h1>
-            <p className="text-gray-600">
+            <h1 className="text-h2 font-semibold text-foreground">Notifications</h1>
+            <p className="text-caption text-muted-foreground">
               {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
             </p>
           </div>
-          
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+      <div className="p-4">
           {unreadCount > 0 && (
+            <div className="mb-6">
             <button
               onClick={handleMarkAllRead}
               disabled={markingAllRead}
-              className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="w-full bg-primary-600 text-white px-4 py-3 rounded-button hover:bg-primary-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {markingAllRead ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -154,16 +166,18 @@ const Notifications = () => {
               )}
               Mark All Read
             </button>
+            </div>
           )}
-        </div>
 
         {notifications.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Bell className="w-8 h-8 text-gray-400" />
+          <div className="flex-1 flex items-center justify-center text-center py-12">
+            <div>
+              <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Bell className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h2 className="text-h3 font-semibold text-foreground mb-2">No notifications yet</h2>
+              <p className="text-body text-muted-foreground">You'll see activity updates and reminders here</p>
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">No notifications yet</h2>
-            <p className="text-gray-600">You'll see activity updates and reminders here</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -172,10 +186,10 @@ const Notifications = () => {
                 key={notification.id}
                 onClick={() => handleMarkRead(notification)}
                 className={`
-                  bg-white rounded-lg border p-4 shadow-sm cursor-pointer transition-all
+                  bg-card rounded-card border p-4 shadow-card cursor-pointer transition-all
                   ${notification.read 
-                    ? 'border-gray-200 opacity-75' 
-                    : 'border-teal-200 bg-teal-50/30'
+                    ? 'border-border opacity-75' 
+                    : 'border-primary-600/20 bg-primary-600/5'
                   }
                   hover:shadow-md
                 `}
@@ -189,26 +203,26 @@ const Notifications = () => {
                     <div className="flex items-start justify-between mb-1">
                       <h3 className={`
                         font-semibold truncate
-                        ${notification.read ? 'text-gray-700' : 'text-gray-900'}
+                        ${notification.read ? 'text-muted-foreground' : 'text-foreground'}
                       `}>
                         {notification.title}
                       </h3>
                       
                       <div className="flex items-center gap-2 ml-2">
-                        <span className="text-xs text-gray-500 whitespace-nowrap">
+                        <span className="text-caption text-muted-foreground whitespace-nowrap">
                           {formatTime(notification.created_at)}
                         </span>
                         
                         {!notification.read && (
-                          <div className="w-2 h-2 bg-teal-600 rounded-full flex-shrink-0" />
+                          <div className="w-2 h-2 bg-primary-600 rounded-full flex-shrink-0" />
                         )}
                       </div>
                     </div>
                     
                     {notification.body && (
                       <p className={`
-                        text-sm leading-relaxed
-                        ${notification.read ? 'text-gray-500' : 'text-gray-700'}
+                        text-body leading-relaxed
+                        ${notification.read ? 'text-muted-foreground' : 'text-foreground'}
                       `}>
                         {notification.body}
                       </p>
@@ -217,12 +231,12 @@ const Notifications = () => {
                     {notification.kind && (
                       <div className="mt-2">
                         <span className={`
-                          inline-block px-2 py-1 rounded-md text-xs font-medium
+                          inline-block px-2 py-1 rounded-md text-caption font-medium
                           ${notification.kind === 'reminder' 
-                            ? 'bg-orange-100 text-orange-700'
+                            ? 'bg-warning/10 text-warning'
                             : notification.kind === 'appointment'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-gray-100 text-gray-700'
+                            ? 'bg-accent-600/10 text-accent-600'
+                            : 'bg-muted/20 text-muted-foreground'
                           }
                         `}>
                           {notification.kind.charAt(0).toUpperCase() + notification.kind.slice(1)}
@@ -237,15 +251,17 @@ const Notifications = () => {
         )}
 
         {/* Info Card */}
-        <div className="mt-8 bg-gray-50 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">About Notifications</h3>
-          <ul className="text-sm text-gray-600 space-y-1">
+        <div className="mt-8 bg-surface-subtle rounded-card p-4">
+          <h3 className="text-body font-semibold text-foreground mb-2">About Notifications</h3>
+          <ul className="text-caption text-muted-foreground space-y-1">
             <li>• Medication reminders appear when you mark doses as taken</li>
             <li>• Appointment notifications are created when you schedule visits</li>
             <li>• Tap any notification to mark it as read</li>
             <li>• Use "Mark All Read" to clear all unread notifications</li>
           </ul>
         </div>
+      </div>
+    </div>
       </div>
     </div>
   )

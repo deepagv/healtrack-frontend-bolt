@@ -5,6 +5,15 @@ import { getGoals, createGoal, updateGoal, deleteGoal, type Goal } from '../data
 import { listMetrics, type HealthMetric } from '../data/metrics'
 import { useToast } from '../components/Toast'
 
+import { z } from 'zod'
+
+const goalSchema = z.object({
+  kind: z.enum(['steps', 'water', 'weight', 'heart_rate', 'sleep', 'calories']),
+  target: z.string().min(1, 'Target value is required').refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, 'Target must be a positive number'),
+  unit: z.string().optional(),
+  period: z.enum(['daily', 'weekly', 'monthly'])
+})
+
 const Goals = () => {
   const { user } = useSupabase()
   const { showToast } = useToast()
@@ -19,6 +28,7 @@ const Goals = () => {
   })
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [createForm, setCreateForm] = useState({
     kind: 'steps' as HealthMetric['kind'],
     target: '',
@@ -83,10 +93,19 @@ const Goals = () => {
   const handleCreateGoal = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!createForm.target) {
-      showToast('error', 'Please enter a target value')
+    // Validate form with zod
+    const validation = goalSchema.safeParse(createForm)
+
+    if (!validation.success) {
+      const errors: Record<string, string> = {}
+      validation.error.errors.forEach(error => {
+        errors[error.path[0] as string] = error.message
+      })
+      setFormErrors(errors)
       return
     }
+
+    setFormErrors({})
 
     try {
       const target = parseFloat(createForm.target)
@@ -196,26 +215,25 @@ const Goals = () => {
   }
 
   return (
-    <div style={{ 
-      maxWidth: '428px', 
-      margin: '0 auto',
-      minHeight: 'calc(100vh - 80px)',
-      background: '#fff',
-      boxShadow: '0 0 20px rgba(0,0,0,0.1)'
-    }}>
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col h-full bg-background">
+      {/* Header */}
+      <div className="bg-card p-4 border-b border-border">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Goals</h1>
-            <p className="text-gray-600">Track your health targets</p>
+            <h1 className="text-h2 font-semibold text-foreground">Goals</h1>
+            <p className="text-caption text-muted-foreground">Track your health targets</p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="bg-teal-600 text-white p-2 rounded-lg hover:bg-teal-700 transition-colors"
+            className="w-12 h-12 bg-primary-600 hover:bg-primary-700 text-white rounded-full flex items-center justify-center transition-colors"
           >
             <Plus className="w-5 h-5" />
           </button>
         </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+      <div className="p-4">
 
         {goals.length === 0 ? (
           <div className="text-center py-12">
@@ -331,18 +349,22 @@ const Goals = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="goal-target" className="block text-body font-medium text-foreground mb-2">
                     Target Value
                   </label>
                   <input
+                    id="goal-target"
                     type="number"
                     step="0.1"
                     value={createForm.target}
                     onChange={(e) => setCreateForm({ ...createForm, target: e.target.value })}
                     placeholder="e.g., 10000"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full h-12 px-3 border border-border rounded-button bg-input-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                     required
                   />
+                  {formErrors.target && (
+                    <p className="text-caption text-danger mt-1">{formErrors.target}</p>
+                  )}
                 </div>
 
                 <div>
@@ -392,6 +414,8 @@ const Goals = () => {
             </div>
           </div>
         )}
+      </div>
+    </div>
       </div>
     </div>
   )

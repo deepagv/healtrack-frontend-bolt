@@ -128,15 +128,15 @@ const Trackers = () => {
   const tabs: HealthMetric['kind'][] = ['steps', 'water', 'weight', 'heart_rate', 'sleep', 'calories']
 
   return (
-    <div style={{ 
-      maxWidth: '428px', 
-      margin: '0 auto',
-      minHeight: 'calc(100vh - 80px)',
-      background: '#fff',
-      boxShadow: '0 0 20px rgba(0,0,0,0.1)'
-    }}>
+    <div className="flex flex-col h-full bg-background">
+      {/* Header */}
+      <div className="bg-card p-4 border-b border-border">
+        <h1 className="text-h2 font-semibold text-foreground">Health Trackers</h1>
+        <p className="text-caption text-muted-foreground">Track your daily metrics</p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
       <div className="p-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Health Trackers</h1>
         
         {/* Tab Navigation */}
         <div className="flex overflow-x-auto gap-2 mb-6 pb-2">

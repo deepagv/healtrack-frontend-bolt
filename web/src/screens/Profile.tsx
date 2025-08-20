@@ -3,7 +3,11 @@ import { User, Save, LogOut, Camera } from 'lucide-react'
 import { useSupabase } from '../hooks/useSupabase'
 import { useToast } from '../components/Toast'
 
-const Profile = () => {
+interface ProfileProps {
+  onNavigateToSettings: () => void
+}
+
+const Profile = ({ onNavigateToSettings }: ProfileProps) => {
   const { supabase, user } = useSupabase()
   const { showToast } = useToast()
   const [profile, setProfile] = useState({
@@ -160,31 +164,33 @@ const Profile = () => {
   }
 
   return (
-    <div style={{ 
-      maxWidth: '428px', 
-      margin: '0 auto',
-      minHeight: 'calc(100vh - 80px)',
-      background: '#fff',
-      boxShadow: '0 0 20px rgba(0,0,0,0.1)'
-    }}>
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col h-full bg-background">
+      {/* Header */}
+      <div className="bg-card p-4 border-b border-border">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Profile</h1>
-            <p className="text-gray-600">Manage your personal information</p>
+            <h1 className="text-h2 font-semibold text-foreground">Profile</h1>
+            <p className="text-caption text-muted-foreground">Manage your personal information</p>
           </div>
-          <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
-            <User className="w-6 h-6 text-teal-600" />
-          </div>
+          <button
+            onClick={onNavigateToSettings}
+            className="w-12 h-12 bg-surface-subtle hover:bg-muted/80 rounded-full flex items-center justify-center transition-colors"
+          >
+            <SettingsIcon className="w-5 h-5 text-muted-foreground" />
+          </button>
         </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+      <div className="p-4">
 
         {/* Auth Info (Read-only) */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Account Information</h2>
+        <div className="bg-surface-subtle rounded-card p-4 mb-6">
+          <h2 className="text-h3 font-semibold text-foreground mb-3">Account Information</h2>
           <div className="space-y-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Email</label>
-              <div className="text-gray-900 bg-white px-3 py-2 rounded-md border border-gray-200">
+              <label className="block text-caption font-medium text-foreground">Email</label>
+              <div className="text-foreground bg-card px-3 py-2 rounded-button border border-border">
                 {user?.email}
               </div>
             </div>
@@ -198,13 +204,13 @@ const Profile = () => {
         </div>
 
         {/* Profile Form */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+        <div className="bg-card rounded-card border border-border p-4 mb-6 shadow-card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Personal Information</h2>
+            <h2 className="text-h3 font-semibold text-foreground">Personal Information</h2>
             <button
               onClick={saveProfile}
               disabled={saving}
-              className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="bg-primary-600 text-white px-4 py-2 rounded-button hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               {saving ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -217,16 +223,17 @@ const Profile = () => {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="full-name" className="block text-body font-medium text-foreground mb-2">
                 Full Name
               </label>
               <input
+                id="full-name"
                 type="text"
                 value={profile.full_name}
                 onChange={(e) => handleInputChange('full_name', e.target.value)}
                 onBlur={handleBlur}
                 placeholder="Enter your full name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full h-12 px-3 border border-border rounded-button bg-input-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
               />
             </div>
 
@@ -338,16 +345,18 @@ const Profile = () => {
         )}
 
         {/* Sign Out */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Account Actions</h3>
+        <div className="bg-card rounded-card border border-border p-4 shadow-card">
+          <h3 className="text-h3 font-semibold text-foreground mb-3">Account Actions</h3>
           <button
             onClick={handleSignOut}
-            className="w-full bg-red-600 text-white py-3 px-4 rounded-md hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-danger text-white py-3 px-4 rounded-button hover:bg-danger/90 transition-colors flex items-center justify-center gap-2"
           >
             <LogOut className="w-5 h-5" />
             Sign Out
           </button>
         </div>
+      </div>
+    </div>
       </div>
     </div>
   )

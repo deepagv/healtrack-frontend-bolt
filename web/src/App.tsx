@@ -1,6 +1,7 @@
-import { Routes, Route } from 'react-router-dom'
-import DevNav from './components/DevNav'
-import DesignRoot from './screens/DesignRoot'
+import React, { useState } from 'react'
+import { AuthGate } from './auth/AuthGate'
+import { ToastProvider } from './components/Toast'
+import { BottomNav, TabType } from '@design/components/core/BottomNav'
 import Dashboard from './screens/Dashboard'
 import Trackers from './screens/Trackers'
 import Medications from './screens/Medications'
@@ -10,26 +11,56 @@ import Profile from './screens/Profile'
 import Settings from './screens/Settings'
 import Notifications from './screens/Notifications'
 
+type AppScreen = TabType | 'goals' | 'settings' | 'notifications'
+
 function App() {
+  const [activeScreen, setActiveScreen] = useState<AppScreen>('dashboard')
+
+  const renderScreen = () => {
+    switch (activeScreen) {
+      case 'home':
+        return <Dashboard />
+      case 'track':
+        return <Trackers />
+      case 'log':
+        return <Goals />
+      case 'appointments':
+        return <Appointments />
+      case 'profile':
+        return <Profile onNavigateToSettings={() => setActiveScreen('settings')} />
+      case 'settings':
+        return <Settings onBack={() => setActiveScreen('profile')} />
+      case 'notifications':
+        return <Notifications onBack={() => setActiveScreen('profile')} />
+      default:
+        return <Dashboard />
+    }
+  }
+
+  const hideBottomNav = ['settings', 'notifications'].includes(activeScreen)
+  const activeTab = ['home', 'track', 'log', 'appointments', 'profile'].includes(activeScreen) 
+    ? activeScreen as TabType 
+    : 'home'
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DevNav />
-      <main>
-        <Routes>
-          <Route path="/" element={<DesignRoot />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/trackers" element={<Trackers />} />
-          <Route path="/medications" element={<Medications />} />
-          <Route path="/appointments" element={<Appointments />} />
-          <Route path="/goals" element={<Goals />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/notifications" element={<Notifications />} />
-          {/* 404 handling - redirect to dashboard */}
-          <Route path="*" element={<Dashboard />} />
-        </Routes>
-      </main>
-    </div>
+    <ToastProvider>
+      <AuthGate>
+        <div className="flex flex-col h-screen bg-background max-w-md mx-auto">
+          {/* Main Content */}
+          <div className="flex-1 overflow-hidden">
+            {renderScreen()}
+          </div>
+
+          {/* Bottom Navigation */}
+          {!hideBottomNav && (
+            <BottomNav
+              activeTab={activeTab}
+              onTabChange={(tab) => setActiveScreen(tab)}
+            />
+          )}
+        </div>
+      </AuthGate>
+    </ToastProvider>
   )
 }
 
